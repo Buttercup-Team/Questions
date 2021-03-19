@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const compression = require('compression');
 const axios = require('axios');
+const querystring = require('querystring');
 const config = require('../config.js');
 const db = require('../db/helpers.js');
 
@@ -22,47 +23,12 @@ const options = {
 
 app.get('/questions/:params', (req, res) => {
   const { params } = req.params;
-  axios.get(`https://app-hrsei-api.herokuapp.com/api/fec2/hr-sea/qa/questions/?product_id=${params}`, options)
-    .then((data) => res.send(data.data))
-    .catch((err) => console.log('error getting questions', err.response.data));
-});
-
-app.get('/qa/questions/:productId', (req, res) => {
-  const params = req.params.productId;
   const query = `SELECT questions.*, answers.*, answers_photos.* FROM questions INNER JOIN answers ON product_id=${params} AND answers.question_id=questions.question_id INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;`;
-  // const query = `
-  // SELECT * FROM questions WHERE product_id=${params};
-  // SELECT questions.product_id, questions.question_id answers.* FROM answers WHERE questions.product_id=${params} AND answers.question_id=questions.question_id;`;
-
-  // const response = {
-  //   product_id: null,
-  //   results: [
-  //     {
-  //       question_id: null,
-  //       question_body: null,
-  //       question_date: null,
-  //       asker_name: null,
-  //       question_helpfulness: null,
-  //       reported: null,
-  //       answers: {
-  //         [answerId]: {
-  //           id: 1259621,
-  //           body: null,
-  //           date: null,
-  //           answerer_name: null,
-  //           helpfulness: null,
-  //           photos: null
-  //         },
-  //       },
-  //     },
-  //   ],
-  // };
 
   db.query(query, (err, data) => {
     if (err) {
       console.log('error in questions get query', err);
     } else {
-      console.log(data);
       const response = {
         product_id: data.rows[0].product_id,
         results: [],
