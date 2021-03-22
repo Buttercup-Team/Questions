@@ -26,11 +26,16 @@ const options = {
 app.get('/questions/:params', (req, res) => {
   const { params } = req.params;
   const query = `SELECT questions.*, answers.*, answers_photos.* FROM questions INNER JOIN answers ON product_id=${params} AND answers.question_id=questions.question_id INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;`;
+  // const query = `
+  // SELECT * FROM questions WHERE product_id=${params};
+  // SELECT answers.*, answers_photos.* FROM answers WHERE (answers.question_id=(SELECT question_id FROM questions WHERE product_id=${params}) THEN INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;
+  // `;
 
   db.query(query, (err, data) => {
     if (err) {
       console.log('error in questions get query', err);
     } else {
+      console.log(data);
       const response = {
         product_id: data.rows[0].product_id,
         results: [],
@@ -81,7 +86,7 @@ app.post('/api/qa/questions/:questionId/answers', (req, res) => {
   });
 });
 
-// API request to post a new question
+//* * API request to post a new question * *//
 
 app.post('/api/qa/questions', (req, res) => {
   const query = `INSERT INTO questions(product_id, question_body, question_date, asker_name, asker_email, question_reported, question_helpfulness) VALUES(${req.body.product_id}, '${req.body.body}', 'now', '${req.body.name}', '${req.body.email}', false, 0)`;
@@ -95,12 +100,56 @@ app.post('/api/qa/questions', (req, res) => {
   });
 });
 
-// {
-//   body: questionsValue,
-//   name: nicknameQues,
-//   email: emailQues,
-//   product_id: prodId,
-// }
+//* * Put requests * *//
+
+//* * Answers Helpfulness * *//
+app.put('/api/qa/answers/:answerId/helpful', (req, res) => {
+  const { answerId } = req.params;
+  const query = `UPDATE answers SET helpfulness=helpfulness +1 WHERE answer_id=${answerId}`;
+
+  db.query(query, (err) => {
+    if (err) {
+      console.log('error with question helpfulness', err);
+      res.sendStatus(500);
+    } else {
+      console.log('successful put request');
+      res.sendStatus(201);
+    }
+  });
+});
+
+//* * Questions Helpfullness * *//
+app.put('/api/qa/questions/:questionId/helpful', (req,res) => {
+  const { questionId } = req.params;
+  const query = `UPDATE questions SET question_helpfulness=question_helpfulness + 1 WHERE question_id=${questionId}`;
+
+  db.query(query, (err) => {
+    if (err) {
+      console.log('err with questions helpful', err);
+      res.sendStatus(500);
+    } else {
+      console.log('successful questions helpful press');
+      res.sendStatus(201);
+    }
+  });
+});
+
+//* * Answers Reported * *//
+
+app.put('/api/qa/answers/:answerId/report', (req, res) => {
+  const { answerId } = req.params;
+  const query = `UPDATE answers SET reported=true WHERE answer_id=${answerId}`;
+
+  db.query(query, (err) => {
+    if (err) {
+      console.log('err updating reported in answers', err);
+      res.sendStatus(500);
+    } else {
+      console.log('successfully updated reported in answers');
+      res.sendStatus(201);
+    }
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`server listening on localhost: ${PORT}`);
