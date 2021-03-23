@@ -6,7 +6,7 @@ const querystring = require('querystring');
 const config = require('../config.js');
 const db = require('../db/helpers.js');
 
-const PORT = 3000;
+const PORT = 3001;
 
 const app = express();
 
@@ -14,12 +14,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 app.use(compression());
-
-const options = {
-  headers: {
-    Authorization: config.TOKEN,
-  },
-};
 
 //* * Get Request * *//
 
@@ -35,7 +29,6 @@ app.get('/questions/:params', (req, res) => {
     if (err) {
       console.log('error in questions get query', err);
     } else {
-      console.log(data);
       const response = {
         product_id: data.rows[0].product_id,
         results: [],
@@ -56,7 +49,7 @@ app.get('/questions/:params', (req, res) => {
               date: question.date,
               answerer_name: question.answerer_name,
               helpfulness: question.helpfulness,
-              photos: question.url,
+              photos: [question.url],
             },
           },
         };
@@ -69,7 +62,7 @@ app.get('/questions/:params', (req, res) => {
 
 //* * Post Request To Add An Answer To A Question * *//
 
-app.post('/api/qa/questions/:questionId/answers', (req, res) => {
+app.post('/qa/questions/:questionId/answers', (req, res) => {
   const { questionId } = req.params;
   const date = new Date().toISOString();
   const query = `INSERT INTO answers(question_id, body, date, answerer_name, answerer_email, reported, helpfulness) VALUES(${questionId}, '${req.body.params.body}', 'now', '${req.body.params.name}', '${req.body.params.email}', false, 0);
@@ -88,7 +81,7 @@ app.post('/api/qa/questions/:questionId/answers', (req, res) => {
 
 //* * API request to post a new question * *//
 
-app.post('/api/qa/questions', (req, res) => {
+app.post('/qa/questions', (req, res) => {
   const query = `INSERT INTO questions(product_id, question_body, question_date, asker_name, asker_email, question_reported, question_helpfulness) VALUES(${req.body.product_id}, '${req.body.body}', 'now', '${req.body.name}', '${req.body.email}', false, 0)`;
   db.query(query, (err) => {
     if (err) {
@@ -119,9 +112,9 @@ app.put('/api/qa/answers/:answerId/helpful', (req, res) => {
 });
 
 //* * Questions Helpfullness * *//
-app.put('/api/qa/questions/:questionId/helpful', (req,res) => {
+app.put('/api/qa/questions/:questionId/helpful', (req, res) => {
   const { questionId } = req.params;
-  const query = `UPDATE questions SET question_helpfulness=question_helpfulness + 1 WHERE question_id=${questionId}`;
+  const query = `UPDATE questions SET question_helpfulness=question_helpfulness +1 WHERE question_id=${questionId}`;
 
   db.query(query, (err) => {
     if (err) {
