@@ -6,7 +6,7 @@ const querystring = require('querystring');
 const config = require('../config.js');
 const db = require('../db/helpers.js');
 
-const PORT = 3001;
+const PORT = 3000;
 
 const app = express();
 
