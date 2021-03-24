@@ -1,9 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
 const compression = require('compression');
-const axios = require('axios');
-const querystring = require('querystring');
-const config = require('../config.js');
 const db = require('../db/helpers.js');
 
 const PORT = 3000;
