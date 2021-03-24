@@ -1,2 +1,12 @@
 node_modules
 npm-debug.log
+
+SDC.pem
+sdc2.pem
+
+.eslintrc.json
+config.js
+
+schema.sql
+
+CSV
