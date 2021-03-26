@@ -1,18 +1,18 @@
-const { Client } = require('pg');
+const { Pool } = require('pg');
 
-const client = new Client({
+const pool = new Pool({
   user: 'ubuntu',
-  host: '3.141.194.216',
-  database: 'postgres',
+  host: '172.31.36.175',
+  database: 'sdc',
   password: 'ubuntu',
   port: 5432,
 });
 
-client.connect((err) => {
+pool.query('SELECT NOW()', (err) => {
   if (err) {
     console.log('error connecting to db', err);
   }
   console.log('connected to sdc :P');
 });
 
-module.exports = client;
+module.exports = pool;

@@ -14,13 +14,13 @@ app.use(compression());
 
 //* * Get Request * *//
 
+app.get('/loaderio-ed5405a6f2a9f4886d22fcb0b13e8303/', (req, res) => {
+  res.send('loaderio-ed5405a6f2a9f4886d22fcb0b13e8303');
+});
+
 app.get('/questions/:params', (req, res) => {
   const { params } = req.params;
   const query = `SELECT questions.*, answers.*, answers_photos.* FROM questions INNER JOIN answers ON product_id=${params} AND answers.question_id=questions.question_id INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;`;
-  // const query = `
-  // SELECT * FROM questions WHERE product_id=${params};
-  // SELECT answers.*, answers_photos.* FROM answers WHERE (answers.question_id=(SELECT question_id FROM questions WHERE product_id=${params}) THEN INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;
-  // `;
 
   db.query(query, (err, data) => {
     if (err) {

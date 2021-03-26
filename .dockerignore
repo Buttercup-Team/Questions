@@ -4,6 +4,7 @@ npm-debug.log
 SDC.pem
 sdc2.pem
 SDCserver.pem
+QuestionsNginx.pem
 
 .eslintrc.json
 config.js
@@ -11,3 +12,7 @@ config.js
 schema.sql
 
 CSV
+
+# location /loaderio-48f57369439528081dd9a50fedee728b {
+#         return 200 'loaderio-48f57369439528081dd9a50fedee728b';
+#         }
