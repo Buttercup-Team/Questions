@@ -8,10 +8,9 @@ QuestionsNginx.pem
 
 .eslintrc.json
 config.js
+README.md
+script.js
 
 schema.sql
 
 CSV
-
-172.31.39.129
-172.31.45.79
