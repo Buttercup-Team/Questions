@@ -1,10 +1,13 @@
 const { Pool } = require('pg');
+const dbp = require('./dbp.js');
+
+const secret = dbp.TOKEN;
 
 const pool = new Pool({
   user: 'ubuntu',
-  host: '172.31.36.175',
+  host: '3.142.220.111',
   database: 'sdc',
-  password: 'ubuntu',
+  password: secret,
   port: 5432,
 });
 

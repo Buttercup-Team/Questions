@@ -13,6 +13,5 @@ schema.sql
 
 CSV
 
-# location /loaderio-48f57369439528081dd9a50fedee728b {
-#         return 200 'loaderio-48f57369439528081dd9a50fedee728b';
-#         }
+172.31.39.129
+172.31.45.79

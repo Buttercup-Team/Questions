@@ -5,6 +5,7 @@ CSV
 # files
 config.js
 .eslintrc.json
+/db/dbp.js
 
 #pem
 SDC.pem

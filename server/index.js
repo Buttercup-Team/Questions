@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const db = require('../db/helpers.js');
 
-const PORT = 3000;
+const PORT = 3001;
 
 const app = express();
 
@@ -14,15 +14,12 @@ app.use(compression());
 
 //* * Get Request * *//
 
-app.get('/loaderio-ed5405a6f2a9f4886d22fcb0b13e8303/', (req, res) => {
-  res.send('loaderio-ed5405a6f2a9f4886d22fcb0b13e8303');
-});
-
 app.get('/questions/:params', (req, res) => {
   const { params } = req.params;
-  const query = `SELECT questions.*, answers.*, answers_photos.* FROM questions INNER JOIN answers ON product_id=${params} AND answers.question_id=questions.question_id INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;`;
+  const values = [params];
+  const query = 'SELECT questions.*, answers.*, answers_photos.* FROM questions INNER JOIN answers ON product_id=($1) AND answers.question_id=questions.question_id INNER JOIN answers_photos ON answers_photos.answer_id=answers.answer_id;';
 
-  db.query(query, (err, data) => {
+  db.query(query, values, (err, data) => {
     if (err) {
       console.log('error in questions get query', err);
     } else {
@@ -61,11 +58,16 @@ app.get('/questions/:params', (req, res) => {
 
 app.post('/qa/questions/:questionId/answers', (req, res) => {
   const { questionId } = req.params;
-  const date = new Date().toISOString();
-  const query = `INSERT INTO answers(question_id, body, date, answerer_name, answerer_email, reported, helpfulness) VALUES(${questionId}, '${req.body.params.body}', 'now', '${req.body.params.name}', '${req.body.params.email}', false, 0);
-  INSERT INTO answers_photos(answer_id, url) VALUES((SELECT answer_id FROM answers WHERE question_id=${questionId} AND body='${req.body.params.body}'), '${req.body.params.photos}')
+  const values = [questionId, req.body.params.body, req.body.params.name, req.body.params.email, req.body.params.photos];
+  const query = `WITH step AS (
+    INSERT INTO answers(question_id, body, date, answerer_name, answerer_email, reported, helpfulness)
+    VALUES (($1), ($2), 'now', ($3), ($4), false, 0)
+    RETURNING answer_id
+  )
+  INSERT INTO answers_photos(answer_id, url)
+  SELECT answer_id, ($5) FROM step
   `;
-  db.query(query, (err) => {
+  db.query(query, values, (err) => {
     if (err) {
       console.log('error posting answer to db', err);
       res.sendStatus(500);
@@ -79,8 +81,9 @@ app.post('/qa/questions/:questionId/answers', (req, res) => {
 //* * API request to post a new question * *//
 
 app.post('/qa/questions', (req, res) => {
-  const query = `INSERT INTO questions(product_id, question_body, question_date, asker_name, asker_email, question_reported, question_helpfulness) VALUES(${req.body.product_id}, '${req.body.body}', 'now', '${req.body.name}', '${req.body.email}', false, 0)`;
-  db.query(query, (err) => {
+  const values = [req.body.product_id, req.body.boody, req.body.name, req.body.email];
+  const query = `INSERT INTO questions(product_id, question_body, question_date, asker_name, asker_email, question_reported, question_helpfulness) VALUES(($1), ($2), 'now', ($3), ($4), false, 0)`;
+  db.query(query, values, (err) => {
     if (err) {
       console.log(err);
       res.sendStatus(500);
@@ -95,9 +98,10 @@ app.post('/qa/questions', (req, res) => {
 //* * Answers Helpfulness * *//
 app.put('/api/qa/answers/:answerId/helpful', (req, res) => {
   const { answerId } = req.params;
-  const query = `UPDATE answers SET helpfulness=helpfulness +1 WHERE answer_id=${answerId}`;
+  const values = [answerId];
+  const query = 'UPDATE answers SET helpfulness=helpfulness +1 WHERE answer_id=($1)';
 
-  db.query(query, (err) => {
+  db.query(query, values, (err) => {
     if (err) {
       console.log('error with question helpfulness', err);
       res.sendStatus(500);
@@ -111,9 +115,10 @@ app.put('/api/qa/answers/:answerId/helpful', (req, res) => {
 //* * Questions Helpfullness * *//
 app.put('/api/qa/questions/:questionId/helpful', (req, res) => {
   const { questionId } = req.params;
-  const query = `UPDATE questions SET question_helpfulness=question_helpfulness +1 WHERE question_id=${questionId}`;
+  const values = [questionId];
+  const query = 'UPDATE questions SET question_helpfulness=question_helpfulness +1 WHERE question_id=($1)';
 
-  db.query(query, (err) => {
+  db.query(query, values, (err) => {
     if (err) {
       console.log('err with questions helpful', err);
       res.sendStatus(500);
@@ -126,11 +131,11 @@ app.put('/api/qa/questions/:questionId/helpful', (req, res) => {
 
 //* * Answers Reported * *//
 
-app.put('/api/qa/answers/:answerId/report', (req, res) => {
+app.put('/qa/answers/:answerId/report', (req, res) => {
   const { answerId } = req.params;
-  const query = `UPDATE answers SET reported=true WHERE answer_id=${answerId}`;
-
-  db.query(query, (err) => {
+  const values = [answerId];
+  const query = 'UPDATE answers SET reported=true WHERE answer_id=($1)';
+  db.query(query, values, (err) => {
     if (err) {
       console.log('err updating reported in answers', err);
       res.sendStatus(500);
